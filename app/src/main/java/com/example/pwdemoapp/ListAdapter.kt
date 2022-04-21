@@ -11,19 +11,11 @@ import android.widget.TextView
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.SpannableString
-import android.widget.ImageView
-import android.graphics.Bitmap.CompressFormat
-
-import android.os.Environment
-
-import android.graphics.BitmapFactory
-
-import android.app.ProgressDialog
-
 import android.graphics.Bitmap
-
-import android.os.AsyncTask
-import java.lang.Exception
+import android.graphics.drawable.Drawable
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import kotlin.concurrent.thread
 
 
 open class ListAdapter(
@@ -47,9 +39,6 @@ open class ListAdapter(
 
         if (holder is MyViewHolder) {
             holder.itemView.nameID.text = model.name
-
-
-
             val builder = SpannableStringBuilder()
             builder.append(model.subjects[0])
             val strx = SpannableString("  •  ")
@@ -72,13 +61,26 @@ open class ListAdapter(
             }
 
             holder.itemView.qualID.setText(builder, TextView.BufferType.SPANNABLE)
-            Glide.with(context).load(model.profileImage)
-                .into(holder.itemView.image)
+            thread {
+                Glide.with(context)
+                    .asBitmap()
+                    .load(model.profileImage)
+                    .into(object : CustomTarget<Bitmap>(){
+                        override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                            holder.itemView.image.setImageBitmap(resource)
+                        }
+                        override fun onLoadCleared(placeholder: Drawable?) {
+
+                        }
+                    })
+            }
         }
     }
+
 
     override fun getItemCount(): Int {
         return list.size
     }
+
     private class MyViewHolder(view: View) : RecyclerView.ViewHolder(view)
 }
